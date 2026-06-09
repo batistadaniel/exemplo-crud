@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>CRUD Usuários</title>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial;
+    }
+
+    body{
+      background:#f5f5f5;
+      padding:40px;
+    }
+
+    .container{
+      max-width:700px;
+      margin:auto;
+      background:white;
+      padding:30px;
+      border-radius:10px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1{
+      margin-bottom:20px;
+      text-align:center;
+    }
+
+    form{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:30px;
+    }
+
+    input{
+      padding:12px;
+      border:1px solid #ccc;
+      border-radius:5px;
+      font-size:16px;
+    }
+
+    button{
+      padding:12px;
+      border:none;
+      border-radius:5px;
+      cursor:pointer;
+      font-size:16px;
+    }
+
+    .btn-salvar{
+      background:#007bff;
+      color:white;
+    }
+
+    .usuarios{
+      display:flex;
+      flex-direction:column;
+      gap:15px;
+    }
+
+    .usuario{
+      background:#fafafa;
+      border:1px solid #ddd;
+      padding:15px;
+      border-radius:8px;
+
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .acoes{
+      display:flex;
+      gap:10px;
+    }
+
+    .btn-editar{
+      background:#ffc107;
+    }
+
+    .btn-deletar{
+      background:#dc3545;
+      color:white;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>CRUD Usuários</h1>
+
+    <form id="form">
+
+      <input
+        type="text"
+        id="nome"
+        placeholder="Nome"
+      >
+
+      <input
+        type="email"
+        id="email"
+        placeholder="Email"
+      >
+
+      <button class="btn-salvar">
+        Salvar
+      </button>
+
+    </form>
+
+    <div class="usuarios" id="usuarios"></div>
+
+  </div>
+
+  <script>
+
+    const API_URL = '/usuarios';
+
+    const form = document.getElementById('form');
+
+    const usuariosDiv = document.getElementById('usuarios');
+
+    const nomeInput = document.getElementById('nome');
+
+    const emailInput = document.getElementById('email');
+
+    let usuarioEditando = null;
+
+    async function carregarUsuarios(){
+
+      const resposta = await fetch(API_URL);
+
+      const usuarios = await resposta.json();
+
+      usuariosDiv.innerHTML = '';
+
+      usuarios.forEach(usuario => {
+
+        usuariosDiv.innerHTML += `
+        
+          <div class="usuario">
+
+            <div>
+
+              <strong>${usuario.nome}</strong>
+
+              <p>${usuario.email}</p>
+
+            </div>
+
+            <div class="acoes">
+
+              <button
+                class="btn-editar"
+                onclick="editarUsuario(${usuario.id}, '${usuario.nome}', '${usuario.email}')"
+              >
+                Editar
+              </button>
+
+              <button
+                class="btn-deletar"
+                onclick="deletarUsuario(${usuario.id})"
+              >
+                Deletar
+              </button>
+
+            </div>
+
+          </div>
+
+        `;
+
+      });
+
+    }
+
+    async function deletarUsuario(id){
+
+      await fetch(`${API_URL}/${id}`, {
+        method:'DELETE'
+      });
+
+      carregarUsuarios();
+
+    }
+
+    function editarUsuario(id, nome, email){
+
+      usuarioEditando = id;
+
+      nomeInput.value = nome;
+
+      emailInput.value = email;
+
+    }
+
+    form.addEventListener('submit', async e => {
+
+      e.preventDefault();
+
+      const usuario = {
+        nome: nomeInput.value,
+        email: emailInput.value
+      };
+
+      if(usuarioEditando){
+
+        await fetch(`${API_URL}/${usuarioEditando}`, {
+
+          method:'PUT',
+
+          headers:{
+            'Content-Type':'application/json'
+          },
+
+          body: JSON.stringify(usuario)
+
+        });
+
+        usuarioEditando = null;
+
+      } else {
+
+        await fetch(API_URL, {
+
+          method:'POST',
+
+          headers:{
+            'Content-Type':'application/json'
+          },
+
+          body: JSON.stringify(usuario)
+
+        });
+
+      }
+
+      form.reset();
+
+      carregarUsuarios();
+
+    });
+
+    carregarUsuarios();
+
+  </script>
+
+</body>
+</html>
