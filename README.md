@@ -122,7 +122,7 @@ Na raiz do projeto:
 Conteúdo:
 
 ```txt
-node_modules
+node_modules/
 .env
 ```
 
